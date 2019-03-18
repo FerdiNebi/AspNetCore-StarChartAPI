@@ -60,6 +60,64 @@ namespace StarChart.Controllers
             return Ok(allCelestialObjects);
         }
 
+        [HttpPost]
+        public IActionResult Create([FromBody]CelestialObject celestialObject)
+        {
+            this._context.CelestialObjects.Add(celestialObject);
+            this._context.SaveChanges();
+
+            return CreatedAtRoute("GetById", new { id = celestialObject.Id }, celestialObject);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, CelestialObject celestialObject)
+        {
+            var persistedCelestialObject = this._context.CelestialObjects.Find(id);
+            if (persistedCelestialObject == null)
+            {
+                return NotFound();
+            }
+
+            persistedCelestialObject.Name = celestialObject.Name;
+            persistedCelestialObject.OrbitalPeriod = celestialObject.OrbitalPeriod;
+            persistedCelestialObject.OrbitedObjectId = celestialObject.OrbitedObjectId;
+
+            //this._context.CelestialObjects.Update(persistedCelestialObject);
+            this._context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/{name}")]
+        public IActionResult RenameObject(int id, string name)
+        {
+            var persistedCelestialObject = this._context.CelestialObjects.Find(id);
+            if (persistedCelestialObject == null)
+            {
+                return NotFound();
+            }
+
+            persistedCelestialObject.Name = name;
+            this._context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var celestialObjects = this._context.CelestialObjects.Where(c => c.Id == id || c.OrbitedObjectId == id).ToList();
+            if (!celestialObjects.Any())
+            {
+                return NotFound();
+            }
+
+            this._context.CelestialObjects.RemoveRange(celestialObjects);
+            this._context.SaveChanges();
+
+            return NoContent();
+        }
+
         private readonly ApplicationDbContext _context;
     }
 }
